@@ -78,13 +78,58 @@ print(f"{category_name}: {100 * score:.1f}%")
 # %%
 # !wget 'https://images.unsplash.com/photo-1553284965-83fd3e82fa5a?ixlib=rb-1.2.1&ixid=MnwxMjA3fDB8MHxleHBsb3JlLWZlZWR8NHx8fGVufDB8fHx8&w=1000&q=80'  -O white_horse.jpg
 # %%
-img = read_image("white_horse.jpg")
-tmp = T.ToPILImage()(img)
+img = read_image("imgs/white_horse.jpg")
+T.ToPILImage()(img)
 # %%
 # Step 3: Apply inference preprocessing transforms
 batch = preprocess(img).unsqueeze(0)
 
 # Step 4: Use the model and print the predicted category
 prediction = model(batch).detach().squeeze(0).softmax(0)
+[top5_scores, top5_idx] = prediction.topk(5)
+cat_list = [ weights.meta["categories"][idx] for idx in top5_idx ]
+
+for idx,res in  enumerate(cat_list):
+    print(f"{res}: {100 * top5_scores[idx]:.1f}%")
 
 # %%
+img_rotated = T.functional.rotate(img, 180)
+T.ToPILImage()(img_rotated)
+# %%
+batch = preprocess(img_rotated).unsqueeze(0)
+
+# Step 4: Use the model and print the predicted category
+prediction = model(batch).detach().squeeze(0).softmax(0)
+[top5_scores, top5_idx] = prediction.topk(5)
+cat_list = [ weights.meta["categories"][idx] for idx in top5_idx ]
+
+for idx,res in  enumerate(cat_list):
+    print(f"{res}: {100 * top5_scores[idx]:.1f}%")
+
+# %%
+img_flipped = T.functional.hflip(img)
+T.ToPILImage()(img_flipped)
+# %%
+batch = preprocess(img_flipped).unsqueeze(0)
+
+# Step 4: Use the model and print the predicted category
+prediction = model(batch).detach().squeeze(0).softmax(0)
+[top5_scores, top5_idx] = prediction.topk(5)
+cat_list = [ weights.meta["categories"][idx] for idx in top5_idx ]
+
+for idx,res in  enumerate(cat_list):
+    print(f"{res}: {100 * top5_scores[idx]:.1f}%")
+
+# %%
+img_inverted = T.functional.invert(img)
+T.ToPILImage()(img_inverted)
+# %%
+batch = preprocess(img_inverted).unsqueeze(0)
+
+# Step 4: Use the model and print the predicted category
+prediction = model(batch).detach().squeeze(0).softmax(0)
+[top5_scores, top5_idx] = prediction.topk(5)
+cat_list = [ weights.meta["categories"][idx] for idx in top5_idx ]
+
+for idx,res in  enumerate(cat_list):
+    print(f"{res}: {100 * top5_scores[idx]:.1f}%")

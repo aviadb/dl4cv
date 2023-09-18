@@ -31,6 +31,15 @@ for net_model in models_list:
     model[net_model] = eval(f'{ctor}(weights={weights[net_model]})')
     model[net_model].eval();
     pre_proc[net_model] = weights[net_model].transforms()
+
+#%%
+img = read_image("imgs/dog.jpg")
+T.ToPILImage()(img).show()
+
+#%%
+predictions = pd.DataFrame()
+
+
     # model[net_model] = net_model.lower()(weights=weights[net_model])
 # weights = {
 #     'resnet18': ResNet18_Weights.IMAGENET1K_V1,
@@ -78,14 +87,14 @@ for net_model in models_list:
 img = read_image("imgs/dog.jpg")
 T.ToPILImage()(img).show()
 
-batch_res18 = preproc_rnet18(img).unsqueeze(0)
-batch_res34 = preproc_rnet34(img).unsqueeze(0)
-batch_res50 = preproc_rnet50(img).unsqueeze(0)
-batch_res101 = preproc_rnet101(img).unsqueeze(0)
-batch_res152 = preproc_rnet152(img).unsqueeze(0)
+# batch_res18 = preproc_rnet18(img).unsqueeze(0)
+# batch_res34 = preproc_rnet34(img).unsqueeze(0)
+# batch_res50 = preproc_rnet50(img).unsqueeze(0)
+# batch_res101 = preproc_rnet101(img).unsqueeze(0)
+# batch_res152 = preproc_rnet152(img).unsqueeze(0)
 
 #%%
-prediction
+predictions = pd.DataFrame()
 
 #%%
 

@@ -1,4 +1,4 @@
-#%%
+## %%
 using Metalhead
 using Images
 using Flux
@@ -7,7 +7,7 @@ using DataAugmentation
 
 model = ResNet(101, pretrain=true);
 
-#%%
+##%%
 img = Images.load("imgs/ILSVRC2012_val_00035585.JPEG")
 img_data = apply(augmentations, Image(img)) |> itemdata
 

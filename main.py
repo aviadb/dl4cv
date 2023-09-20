@@ -25,19 +25,62 @@ model = dict.fromkeys(models_list)
 weights = dict.fromkeys(models_list)
 pre_proc = dict.fromkeys(models_list)
 DS_ver = 'IMAGENET1K_V1'
+# DS_ver = 'DEFAULT'
 for net_model in models_list:
     weights[net_model] = eval('{}_Weights.{}'.format(net_model, DS_ver))
     ctor = net_model.lower()
     model[net_model] = eval(f'{ctor}(weights={weights[net_model]})')
     model[net_model].eval();
-    pre_proc[net_model] = weights[net_model].transforms()
+    pre_proc[net_model] = weights[net_model].transforms(antialias=True)
 
 #%%
-img = read_image("imgs/dog.jpg")
+predict_df = pd.DataFrame(columns=['Model', 'img', 'Top-Class'])
+                                   
+                                   
+                                #    , 'Prob.', 'Top3-Classes'])
+
+# %%
+img_path = 'imgs/dog.jpg'
+img_path = 'imgs/ILSVRC2012_val_00035585.JPEG'
+img_path = 'imgs/n02111889_7198.JPEG'
+img = read_image(img_path)
 T.ToPILImage()(img).show()
+#%%
+# prediction = []
+for mdl_idx,mdl in enumerate(models_list):
+    # batch[mdl] = 
+    pred = model[mdl](pre_proc[mdl](img).unsqueeze(0)).squeeze(0).softmax(0)
+    class_id = pred.argmax().item()
+    pred_list = [
+        mdl, 
+        img_path,
+        '{}: {:.2f}%'.format(
+            weights[mdl].meta["categories"][class_id],
+            100 * pred[class_id].item()
+        )
+        # f"{weights['ResNet50'].meta["categories"][class_id]}: {100 * pred[class_id].item():.2f}%"
+    ]
+    predict_df.loc[len(predict_df)] = pred_list
+    # prediction.append(pred.)
+#%%
+predict_df
+#%%
+batch_res50 = preproc_rnet50(img).unsqueeze(0)
+batch_res101 = preproc_rnet101(img).unsqueeze(0)
+
+# Step 4: Use the model and print the predicted category
+prediction = model['ResNet50'](batch_res50).detach().squeeze(0).softmax(0)
+class_id = prediction.argmax().item()
+score = prediction[class_id].item()
+category_name = weights['ResNet50'].meta["categories"][class_id]
+print(f"{category_name}: {100 * score:.1f}%")
+
+
 
 #%%
-predictions = pd.DataFrame()
+
+
+
 
 
     # model[net_model] = net_model.lower()(weights=weights[net_model])
@@ -86,15 +129,15 @@ predictions = pd.DataFrame()
 #%%
 img = read_image("imgs/dog.jpg")
 T.ToPILImage()(img).show()
-
+#%%
 # batch_res18 = preproc_rnet18(img).unsqueeze(0)
 # batch_res34 = preproc_rnet34(img).unsqueeze(0)
-# batch_res50 = preproc_rnet50(img).unsqueeze(0)
-# batch_res101 = preproc_rnet101(img).unsqueeze(0)
+batch_res50 = pre_proc['ResNet50'](img).unsqueeze(0)
+batch_res101 = pre_proc['ResNet101'](img).unsqueeze(0)
 # batch_res152 = preproc_rnet152(img).unsqueeze(0)
 
 #%%
-predictions = pd.DataFrame()
+# predictions = pd.DataFrame()
 
 #%%
 
@@ -125,12 +168,12 @@ predictions = pd.DataFrame()
 # Step 3: Apply inference preprocessing transforms
 batch_res50 = preproc_rnet50(img).unsqueeze(0)
 batch_res101 = preproc_rnet101(img).unsqueeze(0)
-
+#%%
 # Step 4: Use the model and print the predicted category
-prediction = model(batch).detach().squeeze(0).softmax(0)
+prediction = model['ResNet50'](batch_res50).detach().squeeze(0).softmax(0)
 class_id = prediction.argmax().item()
 score = prediction[class_id].item()
-category_name = weights.meta["categories"][class_id]
+category_name = weights['ResNet50'].meta["categories"][class_id]
 print(f"{category_name}: {100 * score:.1f}%")
 
 # %%

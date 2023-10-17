@@ -19,7 +19,9 @@ import pandas as pd
 
 # Step 1: Initialize model with the best available weights
 
-models_list = ['ResNet18', 'ResNet34', 'ResNet50', 'ResNet101', 'ResNet152']
+models_list = ['ResNet18', 'ResNet34', 
+               'ResNet50', 'ResNet101', 
+               'ResNet152']
 
 model = dict.fromkeys(models_list)
 weights = dict.fromkeys(models_list)
@@ -38,13 +40,26 @@ predict_df = pd.DataFrame(columns=['Model', 'img', 'Top-Class'])
                                    
                                    
                                 #    , 'Prob.', 'Top3-Classes'])
+#%% Pablo baloons
+img_path = 'imgs/TransferLearning/1697355502616.jpg'
+img = read_image(img_path)
+T.ToPILImage()(img).show()
 
+mdl = 'ResNet101'
+pred = model[mdl](pre_proc[mdl](img).unsqueeze(0)).squeeze(0).softmax(0)
+class_id = pred.argmax().item()
+'{}: {:.2f}%'.format(
+            weights[mdl].meta["categories"][class_id],
+            100 * pred[class_id].item()
+        )
 # %%
 img_path = 'imgs/dog.jpg'
 img_path = 'imgs/ILSVRC2012_val_00035585.JPEG'
 img_path = 'imgs/n02111889_7198.JPEG'
 img = read_image(img_path)
 T.ToPILImage()(img).show()
+
+
 #%%
 # prediction = []
 for mdl_idx,mdl in enumerate(models_list):

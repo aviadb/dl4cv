@@ -11,6 +11,7 @@ from torchvision.models import (
 from torchvision.io import read_image
 import pandas as pd
 
+
 #%%
 
 # img = read_image("test/assets/encode_jpeg/grace_hopper_517x606.jpg")
@@ -36,29 +37,76 @@ for net_model in models_list:
     pre_proc[net_model] = weights[net_model].transforms(antialias=True)
 
 #%%
-predict_df = pd.DataFrame(columns=['Model', 'img', 'Top-Class'])
+predict_df = pd.DataFrame(columns=['Model', 'Top-Class', 'Top-k', 'img'])
                                    
                                    
                                 #    , 'Prob.', 'Top3-Classes'])
-#%% Pablo baloons
-img_path = 'imgs/TransferLearning/1697355502616.jpg'
-img = read_image(img_path)
-T.ToPILImage()(img).show()
 
-mdl = 'ResNet101'
-pred = model[mdl](pre_proc[mdl](img).unsqueeze(0)).squeeze(0).softmax(0)
-class_id = pred.argmax().item()
-'{}: {:.2f}%'.format(
-            weights[mdl].meta["categories"][class_id],
-            100 * pred[class_id].item()
-        )
 # %%
 img_path = 'imgs/dog.jpg'
 img_path = 'imgs/ILSVRC2012_val_00035585.JPEG'
-img_path = 'imgs/n02111889_7198.JPEG'
+# img_path = 'imgs/n02111889_7198.JPEG'
 img = read_image(img_path)
 T.ToPILImage()(img).show()
 
+#%% 
+def predict(nnet, pre_proc_img, topk=3):
+    pred = nnet(pre_proc_img.unsqueeze(0)).squeeze(0).softmax(0)
+    # class_id = pred.argmax().item()
+    # cat_list = [ weights.meta["categories"][idx] for idx in topk_idx ]
+    [topk_scores, topk_idx] = pred.topk(topk)
+    topk_str_arr = []
+    for k, obj_idx in enumerate(topk_idx):
+        topk_str_arr.append('{} ({:.2f}%)'.format(
+            weights[mdl].meta["categories"][obj_idx], 
+            100 * topk_scores[k])
+        )
+    top_class = topk_str_arr.pop(0)
+    topk_str = ', '.join(topk_str_arr)
+
+    pred_list = [
+        top_class,
+        topk_str
+        # f"{weights['ResNet50'].meta["categories"][class_id]}: {100 * pred[class_id].item():.2f}%"
+    ]
+    return pred_list
+    # predict_df.loc[len(predict_df)] = pred_list
+    # return predict_df
+
+for mdl_idx, net_arch in enumerate(models_list):
+    p_df = predict(model[net_arch], pre_proc[net_arch](img))
+    predict_df.loc[len(predict_df)] = [net_arch, p_df[0], p_df[1], img_path]
+
+predict_df
+# predict_df2 = pd.concat([p_df, predict_df], sort=False)
+
+#%%
+topk = 3
+for mdl_idx,mdl in enumerate(models_list):
+    # batch[mdl] = 
+    pred = model[mdl](pre_proc[mdl](img).unsqueeze(0)).squeeze(0).softmax(0)
+    class_id = pred.argmax().item()
+
+    [topk_scores, topk_idx] = pred.topk(topk)
+    # cat_list = [ weights.meta["categories"][idx] for idx in topk_idx ]
+    topk_str_arr = []
+    for k, obj_idx in enumerate(topk_idx):
+        topk_str_arr.append('{} ({:.2f}%)'.format(
+            weights[mdl].meta["categories"][obj_idx], 
+            100 * topk_scores[k])
+        )
+    top_class = topk_str_arr.pop(0)
+    topk_str = ', '.join(topk_str_arr)
+
+    pred_list = [
+        mdl, 
+        img_path,
+        top_class,
+        topk_str
+        # f"{weights['ResNet50'].meta["categories"][class_id]}: {100 * pred[class_id].item():.2f}%"
+    ]
+    predict_df.loc[len(predict_df)] = pred_list
+predict_df
 
 #%%
 # prediction = []
@@ -79,6 +127,30 @@ for mdl_idx,mdl in enumerate(models_list):
     # prediction.append(pred.)
 #%%
 predict_df
+
+#%% Pablo baloons
+img_path = 'imgs/TransferLearning/1697355502616.jpg'
+img = read_image(img_path)
+T.ToPILImage()(img).show()
+
+mdl = 'ResNet101'
+pred = model[mdl](pre_proc[mdl](img).unsqueeze(0)).squeeze(0).softmax(0)
+class_id = pred.argmax().item()
+'{}: {:.2f}%'.format(
+            weights[mdl].meta["categories"][class_id],
+            100 * pred[class_id].item()
+        )
+
+#%
+
+arch="resnet152"
+target_layer="layer4"
+image_paths="samples/cat_dog.png"
+topk=3
+cuda=True
+output_dir="./results"
+demo1(image_paths, target_layer, arch, topk, output_dir, cuda)
+
 #%%
 batch_res50 = preproc_rnet50(img).unsqueeze(0)
 batch_res101 = preproc_rnet101(img).unsqueeze(0)
